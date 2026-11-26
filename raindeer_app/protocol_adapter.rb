@@ -9,16 +9,8 @@
 # the rack_adapter.rb test, this skips Rack entirely in both directions: no Protocol::HTTP
 # -> Rack env -> Protocol::HTTP round trip anywhere in the request path.
 
-require 'bundler/setup'
-
-if ENV['DISABLE_TYPE_CHECKING']
-  require 'lowtype'
-  # Must run before any Raindeer classes load -- the typed-vs-untyped method
-  # wrapper is chosen once per class, at class-definition time.
-  LowType.configure { |config| config.type_checking = false }
-end
-
-require 'raindeer/boot'
+# The same LowType config and Raindeer boot as LowLoop's bin/server, so all three Raindeer servers run the same app.
+require_relative 'config/boot'
 
 Low::Events::RequestEvent.define do |observers|
   observers << Providers['rain.router']

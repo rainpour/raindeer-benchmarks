@@ -10,9 +10,9 @@
 # steps via Rack instead, so any Rack server (Iodine included) can drive Raindeer's
 # router without LowLoop ever being instantiated.
 
-require 'bundler/setup'
 require 'rack'
-require 'raindeer/boot'
+# The same LowType config and Raindeer boot as LowLoop's bin/server, so all three Raindeer servers run the same app.
+require_relative 'config/boot'
 
 # Normally done inside LowLoop#initialize -- replicated here since we never build a
 # LowLoop instance (that's the whole point: skip its socket/transport layer).

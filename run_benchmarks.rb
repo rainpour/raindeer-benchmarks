@@ -31,6 +31,7 @@
 #
 #   ruby run_benchmarks.rb
 #   ROUTES=100 ruby run_benchmarks.rb   # 100 routes, writes benchmark-report-100.html
+#   PARAMS=1 ruby run_benchmarks.rb     # routes with :id segments, writes benchmark-report-params.html
 #
 # Method: `ab -n 2000 -c 25 -k` warm-up (discarded), then `ab -n 20000 -c 50 -k`
 # measured, against each server one at a time (never concurrently, to avoid CPU
@@ -166,7 +167,9 @@ def parse_ab(output)
     p90: output[/^\s*90%\s+(\d+)/, 1].to_i,
     p99: output[/^\s*99%\s+(\d+)/, 1].to_i,
     failed: output[/Failed requests:\s+(\d+)/, 1].to_i,
-    complete: output[/Complete requests:\s+(\d+)/, 1].to_i
+    complete: output[/Complete requests:\s+(\d+)/, 1].to_i,
+    # ab counts a 404 as complete, so a route a framework didn't match would otherwise look like a fast response.
+    non_2xx: output[/Non-2xx responses:\s+(\d+)/, 1].to_i
   }
 end
 
@@ -255,8 +258,9 @@ begin
       output = run_ab(MEASURE_ARGS, target[:port], path)
       stats = parse_ab(output)
 
-      if stats[:complete] != 20_000 || stats[:failed] != 0
-        warn "  WARNING: #{target[:name]} (#{label}) -- complete=#{stats[:complete]} failed=#{stats[:failed]}"
+      if stats[:complete] != 20_000 || stats[:failed] != 0 || stats[:non_2xx] != 0
+        warn "  WARNING: #{target[:name]} (#{label}) -- complete=#{stats[:complete]} failed=#{stats[:failed]} " \
+             "non-2xx=#{stats[:non_2xx]}"
       end
 
       results_by_label[label] << stats.merge(name: target[:name])
@@ -265,8 +269,7 @@ begin
 
   print_summary(results_by_label)
 
-  report_name = RouteShape::ROUTES == 1000 ? 'benchmark-report.html' : "benchmark-report-#{RouteShape::ROUTES}.html"
-  out_path = File.join(ROOT, report_name)
+  out_path = File.join(ROOT, RouteShape.report_name)
   report = <<~HTML
     <title>Raindeer Benchmarks</title>
 
