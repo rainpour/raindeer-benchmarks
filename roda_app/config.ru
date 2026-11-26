@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require File.expand_path("../route_shape", Dir.pwd)
+
 require 'roda'
 
 class App < Roda
@@ -13,7 +15,7 @@ class App < Roda
       "Slow response\n"
     end
 
-    # 1000 routes total, mirroring the common REST nested-resource pattern:
+    # 1000 routes total by default (or 100 with ROUTES=100, see route_shape.rb), mirroring the common REST nested-resource pattern:
     # a resource is independently addressable AND has children (/orgs/5,
     # then /orgs/5/repos/3, then /orgs/5/repos/3/issues/2) rather than
     # inventing disjoint namespaces that only ever exist to create depth.
@@ -33,20 +35,20 @@ class App < Roda
     # case, which pays roughly the same either way.
 
     # solo1..10 are also duo parents.
-    (1..10).each do |s|
+    RouteShape.solo_parents.each do |s|
       r.on "solo#{s}" do
         r.get true do
           "Route #{s}\n"
         end
 
         # duo1..10 (within this solo) are also trio parents.
-        (1..10).each do |d|
+        RouteShape.duo_parents.each do |d|
           r.on "duo#{d}" do
             r.get true do
               "Route #{s}-#{d}\n"
             end
 
-            (1..3).each do |t|
+            RouteShape.trios.each do |t|
               r.get "trio#{t}" do
                 "Route #{s}-#{d}-#{t}\n"
               end
@@ -55,7 +57,7 @@ class App < Roda
         end
 
         # Plain duo leaves, no children.
-        (11..30).each do |d|
+        RouteShape.plain_duos.each do |d|
           r.get "duo#{d}" do
             "Route #{s}-#{d}\n"
           end
@@ -64,7 +66,7 @@ class App < Roda
     end
 
     # Plain solo leaves, no children.
-    (11..400).each do |s|
+    RouteShape.plain_solos.each do |s|
       r.get "solo#{s}" do
         "Route #{s}\n"
       end

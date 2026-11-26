@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require File.expand_path("../route_shape", Dir.pwd)
+
 Rage.routes.draw do
   root to: ->(_env) { [200, {}, ["Welcome to Rage\n"]] }
 
@@ -8,7 +10,7 @@ Rage.routes.draw do
     [200, {}, ["Slow response\n"]]
   }
 
-  # 1000 routes total, mirroring the common REST nested-resource pattern: a
+  # 1000 routes total by default (or 100 with ROUTES=100, see route_shape.rb), mirroring the common REST nested-resource pattern: a
   # resource is independently addressable AND has children (/orgs/5, then
   # /orgs/5/repos/3, then /orgs/5/repos/3/issues/2) rather than inventing
   # disjoint namespaces that only ever exist to create depth. solo1..10
@@ -21,24 +23,24 @@ Rage.routes.draw do
   # either way.
 
   # Plain solo leaves, no children.
-  (11..400).each do |s|
+  RouteShape.plain_solos.each do |s|
     get "solo#{s}", to: ->(_env) { [200, {}, ["Route #{s}\n"]] }
   end
 
-  (1..10).each do |s|
+  RouteShape.solo_parents.each do |s|
     # solo1..10 are also duo parents.
     get "solo#{s}", to: ->(_env) { [200, {}, ["Route #{s}\n"]] }
 
     # Plain duo leaves, no children.
-    (11..30).each do |d|
+    RouteShape.plain_duos.each do |d|
       get "solo#{s}/duo#{d}", to: ->(_env) { [200, {}, ["Route #{s}-#{d}\n"]] }
     end
 
     # duo1..10 (within this solo) are also trio parents.
-    (1..10).each do |d|
+    RouteShape.duo_parents.each do |d|
       get "solo#{s}/duo#{d}", to: ->(_env) { [200, {}, ["Route #{s}-#{d}\n"]] }
 
-      (1..3).each do |t|
+      RouteShape.trios.each do |t|
         get "solo#{s}/duo#{d}/trio#{t}", to: ->(_env) { [200, {}, ["Route #{s}-#{d}-#{t}\n"]] }
       end
     end

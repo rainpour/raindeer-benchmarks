@@ -30,6 +30,7 @@
 # one row per server) in this directory. Re-run any time with:
 #
 #   ruby run_benchmarks.rb
+#   ROUTES=100 ruby run_benchmarks.rb   # 100 routes, writes benchmark-report-100.html
 #
 # Method: `ab -n 2000 -c 25 -k` warm-up (discarded), then `ab -n 20000 -c 50 -k`
 # measured, against each server one at a time (never concurrently, to avoid CPU
@@ -39,18 +40,14 @@
 require 'net/http'
 require 'timeout'
 require 'fileutils'
+require_relative 'route_shape'
 
 ROOT = __dir__
-RUBY_BIN = File.expand_path('~/.asdf/installs/ruby/3.4.2/bin')
+RUBY_BIN = File.expand_path('~/.asdf/installs/ruby/4.0.9/bin')
 ENV['PATH'] = "#{RUBY_BIN}:#{ENV['PATH']}"
 
 READY_PATH = '/'
-TEST_PATHS = {
-  'GET /' => '/',
-  '1 segment' => '/solo10',
-  '2 segments' => '/solo10/duo10',
-  '3 segments' => '/solo10/duo10/trio3'
-}.freeze
+TEST_PATHS = RouteShape.test_paths.freeze
 
 WARMUP_ARGS  = %w[-n 2000  -c 25 -k]
 MEASURE_ARGS = %w[-n 20000 -c 50 -k]
@@ -268,7 +265,8 @@ begin
 
   print_summary(results_by_label)
 
-  out_path = File.join(ROOT, 'benchmark-report.html')
+  report_name = RouteShape::ROUTES == 1000 ? 'benchmark-report.html' : "benchmark-report-#{RouteShape::ROUTES}.html"
+  out_path = File.join(ROOT, report_name)
   report = <<~HTML
     <title>Raindeer Benchmarks</title>
 

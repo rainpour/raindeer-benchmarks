@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require File.expand_path("../route_shape", Dir.pwd)
+
 require 'sinatra/base'
 
 class App < Sinatra::Base
@@ -12,7 +14,7 @@ class App < Sinatra::Base
     "Slow response\n"
   end
 
-  # 1000 routes total, mirroring the common REST nested-resource pattern: a
+  # 1000 routes total by default (or 100 with ROUTES=100, see route_shape.rb), mirroring the common REST nested-resource pattern: a
   # resource is independently addressable AND has children (/orgs/5, then
   # /orgs/5/repos/3, then /orgs/5/repos/3/issues/2) rather than inventing
   # disjoint namespaces that only ever exist to create depth. solo1..10
@@ -26,32 +28,32 @@ class App < Sinatra::Base
   # check.
 
   # Plain solo leaves, no children.
-  (11..400).each do |s|
+  RouteShape.plain_solos.each do |s|
     get "/solo#{s}" do
       "Route #{s}\n"
     end
   end
 
   # solo1..10 are also duo parents.
-  (1..10).each do |s|
+  RouteShape.solo_parents.each do |s|
     get "/solo#{s}" do
       "Route #{s}\n"
     end
 
     # Plain duo leaves, no children.
-    (11..30).each do |d|
+    RouteShape.plain_duos.each do |d|
       get "/solo#{s}/duo#{d}" do
         "Route #{s}-#{d}\n"
       end
     end
 
     # duo1..10 (within this solo) are also trio parents.
-    (1..10).each do |d|
+    RouteShape.duo_parents.each do |d|
       get "/solo#{s}/duo#{d}" do
         "Route #{s}-#{d}\n"
       end
 
-      (1..3).each do |t|
+      RouteShape.trios.each do |t|
         get "/solo#{s}/duo#{d}/trio#{t}" do
           "Route #{s}-#{d}-#{t}\n"
         end

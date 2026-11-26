@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
+require File.expand_path("../route_shape", Dir.pwd)
+
 class RouteNNode < LowNode
-  (11..400).each { |s| observe "/solo#{s}" }
-  (1..10).each do |s|
+  RouteShape.plain_solos.each { |s| observe "/solo#{s}" }
+  RouteShape.solo_parents.each do |s|
     observe "/solo#{s}"
-    (11..30).each { |d| observe "/solo#{s}/duo#{d}" }
-    (1..10).each do |d|
+    RouteShape.plain_duos.each { |d| observe "/solo#{s}/duo#{d}" }
+    RouteShape.duo_parents.each do |d|
       observe "/solo#{s}/duo#{d}"
-      (1..3).each { |t| observe "/solo#{s}/duo#{d}/trio#{t}" }
+      RouteShape.trios.each { |t| observe "/solo#{s}/duo#{d}/trio#{t}" }
     end
   end
 
