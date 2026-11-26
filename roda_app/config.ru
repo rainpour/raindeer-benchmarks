@@ -5,6 +5,13 @@ require File.expand_path('../route_shape', Dir.pwd)
 require 'roda'
 
 class App < Roda
+  # The same page as raindeer_app/app/template_node.rbx, escaped like Raindeer's RBX. Templates are compiled once and
+  # cached, as the app is frozen.
+  plugin :render, escape: true, views: File.join(__dir__, 'views')
+
+  User = Data.define(:id, :name)
+  USERS = (1..10).map { |id| User.new(id, "User <#{id}>") }.freeze
+
   # The route table from route_shape.rb (1000 routes by default) as a tree of segments. r.on -- Roda's routing-tree
   # primitive -- means a failed segment match skips every route nested under it, instead of checking each one.
   # A :param segment matches any one segment with Roda's String matcher.
@@ -47,6 +54,11 @@ class App < Roda
     r.get 'slow' do
       sleep(0.05) # Simulates a blocking downstream I/O call (DB query, HTTP request, etc).
       "Slow response\n"
+    end
+
+    r.get 'template' do
+      @users = USERS
+      render('template')
     end
 
     route_tree(r, ROUTE_TREE)

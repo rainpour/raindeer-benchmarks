@@ -32,6 +32,8 @@
 #   ruby run_benchmarks.rb
 #   ROUTES=100 ruby run_benchmarks.rb   # 100 routes, writes benchmark-report-100.html
 #   PARAMS=1 ruby run_benchmarks.rb     # routes with :id segments, writes benchmark-report-params.html
+#   ruby run_benchmarks.rb --templates  # Raindeer's RBX against Roda's ERB, writes benchmark-report-templates.html
+#   ruby run_benchmarks.rb --io         # /slow (50ms of sleep) at rising concurrency, writes benchmark-report-io.html
 #
 # Pass --skip-iodine to leave the Iodine-based servers out entirely (not
 # started, benchmarked, or reported).
@@ -53,14 +55,26 @@ RUBY_BIN = %w[~/.local/share/mise/installs/ruby/4.0.9/bin ~/.asdf/installs/ruby/
 ENV['PATH'] = "#{RUBY_BIN}:#{ENV['PATH']}" if RUBY_BIN
 
 READY_PATH = '/'
-# The middle member of each route family, not the last one declared: Sinatra and Roda match in declaration order,
-# so a route near the end of the list is their worst case, not a typical request. See RouteShape.test_paths.
-TEST_PATHS = RouteShape.test_paths.freeze
-
 SKIP_IODINE = ARGV.include?('--skip-iodine')
+MODE = if ARGV.include?('--templates') then :templates
+       elsif ARGV.include?('--io') then :io
+       else :routes
+       end
 
-WARMUP_ARGS  = %w[-n 2000  -c 25 -k]
-MEASURE_ARGS = %w[-n 20000 -c 50 -k]
+# Each test is a label => { path:, concurrency: }.
+TESTS = case MODE
+        # The same list of 10 users with escaped values, as RBX in Raindeer and as ERB in Roda.
+        when :templates then { 'Template' => { path: '/template', concurrency: 50 } }
+        # A request that waits 50ms, like a database query. One request at a time could do 20 req/s, so the best a
+        # server can do is 20 x the concurrency, if it waits on every request at once.
+        when :io then [50, 200, 1000].to_h { |c| ["/slow, #{c} at once", { path: '/slow', concurrency: c }] }
+        # The middle member of each route family, not the last one declared: Sinatra and Roda match in declaration
+        # order, so a route near the end of the list is their worst case, not a typical request.
+        else RouteShape.test_paths.transform_values { |path| { path:, concurrency: 50 } }
+        end.freeze
+
+WARMUP_REQUESTS = 2000
+MEASURE_REQUESTS = 20_000
 
 TARGETS = [
   {
@@ -119,7 +133,8 @@ TARGETS = [
     env: { 'RAILS_ENV' => 'production' },
     port: 9296
   }
-].reject { |target| SKIP_IODINE && target[:name].downcase.include?('iodine') }.freeze
+].reject { |target| SKIP_IODINE && target[:name].downcase.include?('iodine') }
+ .select { |target| MODE != :templates || target[:name].match?(/\A(Raindeer|Roda) /) }.freeze
 
 def free_stale_ports!
   # Best-effort cleanup of leftover processes from a previous run that didn't
@@ -164,8 +179,8 @@ rescue Errno::ESRCH
   nil
 end
 
-def run_ab(args, port, path)
-  `ab #{args.join(' ')} http://127.0.0.1:#{port}#{path} 2>&1`
+def run_ab(requests, concurrency, port, path)
+  `ab -n #{requests} -c #{concurrency} -k http://127.0.0.1:#{port}#{path} 2>&1`
 end
 
 def parse_ab(output)
@@ -261,18 +276,18 @@ begin
     puts 'ready'
   end
 
-  results_by_label = TEST_PATHS.to_h { |label, _path| [label, []] }
+  results_by_label = TESTS.to_h { |label, _test| [label, []] }
 
   TARGETS.each do |target|
-    TEST_PATHS.each do |label, path|
+    TESTS.each do |label, test|
       puts "Benchmarking #{target[:name]} (#{label}, warm-up)..."
-      run_ab(WARMUP_ARGS, target[:port], path)
+      run_ab(WARMUP_REQUESTS, [test[:concurrency], 25].min, target[:port], test[:path])
 
       puts "Benchmarking #{target[:name]} (#{label}, measured)..."
-      output = run_ab(MEASURE_ARGS, target[:port], path)
+      output = run_ab(MEASURE_REQUESTS, test[:concurrency], target[:port], test[:path])
       stats = parse_ab(output)
 
-      if stats[:complete] != 20_000 || stats[:failed] != 0 || stats[:non_2xx] != 0
+      if stats[:complete] != MEASURE_REQUESTS || stats[:failed] != 0 || stats[:non_2xx] != 0
         warn "  WARNING: #{target[:name]} (#{label}) -- complete=#{stats[:complete]} failed=#{stats[:failed]} non-2xx=#{stats[:non_2xx]}"
       end
 
@@ -282,7 +297,8 @@ begin
 
   print_summary(results_by_label)
 
-  out_path = File.join(ROOT, RouteShape.report_name)
+  report_name = MODE == :routes ? RouteShape.report_name : "benchmark-report-#{MODE}.html"
+  out_path = File.join(ROOT, report_name)
   report = <<~HTML
     <title>Raindeer Benchmarks</title>
 
