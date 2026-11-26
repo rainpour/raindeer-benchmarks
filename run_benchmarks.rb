@@ -30,6 +30,8 @@
 # one row per server) in this directory. Re-run any time with:
 #
 #   ruby run_benchmarks.rb
+#   ROUTES=100 ruby run_benchmarks.rb   # 100 routes, writes benchmark-report-100.html
+#   PARAMS=1 ruby run_benchmarks.rb     # routes with :id segments, writes benchmark-report-params.html
 #
 # Pass --skip-iodine to leave the Iodine-based servers out entirely (not
 # started, benchmarked, or reported).
@@ -42,22 +44,18 @@
 require 'net/http'
 require 'timeout'
 require 'fileutils'
+require_relative 'route_shape'
 
 ROOT = __dir__
-RUBY_BIN = File.expand_path('~/.local/share/mise/installs/ruby/3.4.2/bin')
-ENV['PATH'] = "#{RUBY_BIN}:#{ENV['PATH']}"
+# Raindeer needs Ruby 4, from mise or asdf, whichever has it.
+RUBY_BIN = %w[~/.local/share/mise/installs/ruby/4.0.9/bin ~/.asdf/installs/ruby/4.0.9/bin]
+           .map { |path| File.expand_path(path) }.find { |path| Dir.exist?(path) }
+ENV['PATH'] = "#{RUBY_BIN}:#{ENV['PATH']}" if RUBY_BIN
 
 READY_PATH = '/'
-# The middle member of each route family (solo11..400, duo11..30 within
-# solo1..10, trio1..3 within duo1..10), not the last one declared: Sinatra
-# and Roda match in declaration order, so a route near the end of the list is
-# their worst case, not a typical request.
-TEST_PATHS = {
-  'GET /' => '/',
-  '1 segment' => '/solo200',
-  '2 segments' => '/solo5/duo15',
-  '3 segments' => '/solo5/duo5/trio2'
-}.freeze
+# The middle member of each route family, not the last one declared: Sinatra and Roda match in declaration order,
+# so a route near the end of the list is their worst case, not a typical request. See RouteShape.test_paths.
+TEST_PATHS = RouteShape.test_paths.freeze
 
 SKIP_IODINE = ARGV.include?('--skip-iodine')
 
@@ -284,7 +282,7 @@ begin
 
   print_summary(results_by_label)
 
-  out_path = File.join(ROOT, 'benchmark-report.html')
+  out_path = File.join(ROOT, RouteShape.report_name)
   report = <<~HTML
     <title>Raindeer Benchmarks</title>
 

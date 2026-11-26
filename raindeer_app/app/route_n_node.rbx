@@ -1,15 +1,9 @@
 # frozen_string_literal: true
 
+require File.expand_path('../route_shape', Dir.pwd)
+
 class RouteNNode < LowNode
-  (11..400).each { |s| observe "/solo#{s}" }
-  (1..10).each do |s|
-    observe "/solo#{s}"
-    (11..30).each { |d| observe "/solo#{s}/duo#{d}" }
-    (1..10).each do |d|
-      observe "/solo#{s}/duo#{d}"
-      (1..3).each { |t| observe "/solo#{s}/duo#{d}/trio#{t}" }
-    end
-  end
+  RouteShape.paths.each { |path| observe path }
 
   def render
     "Route\n"

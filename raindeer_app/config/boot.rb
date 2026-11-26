@@ -3,9 +3,12 @@
 require 'bundler/setup'
 require 'lowtype'
 
-# Must run before any Raindeer classes load -- the typed-vs-untyped method
-# wrapper is chosen once per class, at class-definition time.
-LowType.configure { |config| config.type_checking = false }
+# Must run before any Raindeer classes load -- LowType rewrites each class's typed methods once, as the class loads.
+# Strip mode rewrites them without types, as plain Ruby methods, for close to native speed.
+LowType.configure do |config|
+  config.type_checking = false
+  config.disable_mode = :strip
+end
 
 require 'raindeer/boot'
 
