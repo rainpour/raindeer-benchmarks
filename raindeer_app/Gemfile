@@ -3,7 +3,9 @@
 source 'https://rubygems.org'
 
 local_gems = {
-  'raindeer' => '/Users/m/dev/raindeer'
+  'raindeer' => '/Users/m/dev/raindeer',
+  'antlers' => '/Users/m/dev/antlers',
+  'observers' => '/Users/m/dev/observers'
 }
 
 local_gems.each do |name, path|

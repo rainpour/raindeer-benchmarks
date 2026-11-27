@@ -1,4 +1,16 @@
 PATH
+  remote: /Users/m/dev/antlers
+  specs:
+    antlers (1.5.10)
+      lowkey (>= 0.7.0)
+      plugs
+
+PATH
+  remote: /Users/m/dev/observers
+  specs:
+    observers (1.1.3)
+
+PATH
   remote: /Users/m/dev/raindeer
   specs:
     raindeer (1.0.54)
@@ -24,9 +36,6 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    antlers (1.5.10)
-      lowkey (>= 0.7.0)
-      plugs
     async (2.46.0)
       console (~> 1.29)
       fiber-annotation
@@ -140,7 +149,6 @@ GEM
       expressions (~> 0.1)
       lowkey (>= 0.7.1)
       trees (>= 0.4)
-    observers (1.1.3)
     openssl (4.0.2)
     ostruct (0.6.3)
     paint (2.3.0)
@@ -211,14 +219,16 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  antlers!
   falcon
+  observers!
   rack
   rage-iodine
   raindeer!
   stackprof
 
 CHECKSUMS
-  antlers (1.5.10) sha256=3628ca25190a3bf34148ad8d7294e20ba964c27f51df1d63c0d706aeaf1e0a49
+  antlers (1.5.10)
   async (2.46.0) sha256=34f984733dbf63a997376346451ec995e858cacc3105e86ccfeaf8877b4f490b
   async-container (0.38.0) sha256=71479d8551870d684e602f463d7b8368909c835a64e38b555e1821512ffffc88
   async-http (0.105.0) sha256=55191969d5cf61be5fbc2e0aadd51d77085318ba192a5ff5e12e3aba0826906a
@@ -264,7 +274,7 @@ CHECKSUMS
   lowloop (0.8.17) sha256=eff8bfed6452f0800550b10bc2e5ab5caebaa3cb52a43b16379e5cdd80eaace8
   lownode (0.5.14) sha256=8cc924edd968ea0887bbf129271a9d77b120d9e6b77d5b07fb70b5dbce35d73a
   lowtype (1.7.1) sha256=ea35219590872eae0d4b1ef04ad02cc6f00dc46491d9121d8ec93c5dbab9125d
-  observers (1.1.3) sha256=b6e59f95ce29ee5f8b293168c4a7434b515580f6469278acb9462374d1b576ee
+  observers (1.1.3)
   openssl (4.0.2) sha256=1037ad2868ae58df9ad917891c0c0f9815a1172f6846d4bcdd508e4c2ee747c2
   ostruct (0.6.3) sha256=95a2ed4a4bd1d190784e666b47b2d3f078e4a9efda2fccf18f84ddc6538ed912
   paint (2.3.0) sha256=327d623e4038619d5bd99ae5db07973859cd78400c7f0329eea283cef8e83be5
