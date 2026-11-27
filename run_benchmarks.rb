@@ -208,6 +208,14 @@ def bold_framework(name)
   server ? "<strong>#{framework}</strong> + #{server}" : "<strong>#{framework}</strong>"
 end
 
+# ab stops at its first socket error, like a request waiting longer than its 30 second timeout, and then reports no
+# complete requests. That's a server that timed out, rather than one that served 0 requests a second.
+def timed_out?(stats) = stats[:complete].zero?
+
+def req_cell(stats) = timed_out?(stats) ? 'timed out' : with_commas(stats[:reqs], decimals: 2)
+
+def latency_cell(stats) = timed_out?(stats) ? 'timed out' : "#{with_commas(stats[:mean], decimals: 3)} ms"
+
 # One row per server, one Req/s column per benchmarked path (sorted by the
 # average Req/s across all paths), plus mean latency for the last path only (the highest
 # route count -- the most demanding, most differentiating column).
@@ -228,8 +236,8 @@ def render_table(results_by_label)
   rows = sorted_names.map do |name|
     cells = [
       "<td>#{bold_framework(name)}</td>",
-      *labels.map { |label| "<td>#{with_commas(stats_by_name[name][label][:reqs], decimals: 2)}</td>" },
-      "<td>#{with_commas(stats_by_name[name][latency_label][:mean], decimals: 3)} ms</td>"
+      *labels.map { |label| "<td>#{req_cell(stats_by_name[name][label])}</td>" },
+      "<td>#{latency_cell(stats_by_name[name][latency_label])}</td>"
     ]
 
     "<tr>\n  #{cells.join("\n  ")}\n</tr>\n"
