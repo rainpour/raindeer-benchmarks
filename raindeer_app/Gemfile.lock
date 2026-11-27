@@ -13,7 +13,7 @@ PATH
 PATH
   remote: /Users/m/dev/raindeer
   specs:
-    raindeer (1.0.57)
+    raindeer (1.0.59)
       antlers (~> 1.5, >= 1.5.12)
       dirload (~> 0.7, >= 0.7.1)
       expressions (~> 0.4)
@@ -22,7 +22,7 @@ PATH
       lowevent (~> 0.8, >= 0.8.11)
       lowkey (~> 0.7, >= 0.7.5)
       lowloop (~> 0.8, >= 0.8.18)
-      lownode (~> 0.5, >= 0.5.15)
+      lownode (~> 0.5, >= 0.5.16)
       lowtype (>= 1.7.3)
       observers (~> 1.1, >= 1.1.5)
       ostruct
@@ -138,7 +138,7 @@ GEM
       paint
       protocol-http
       protocol-url
-    lownode (0.5.15)
+    lownode (0.5.16)
       antlers (~> 1.5, >= 1.5.3)
       lowevent
       lowtype (~> 1.6)
@@ -272,7 +272,7 @@ CHECKSUMS
   lowevent (0.8.11) sha256=2488d99c8fe2ed94bf7b7a2c45b8da890a08c9dc0c2320731159bba979fe42c1
   lowkey (0.7.5) sha256=242d89ab121dc03fc67aa81d3622b217040258db74a03066103c4165e070435d
   lowloop (0.8.18) sha256=5d622e913bdc17d0b41e89ef0a81944bb813ba0dcb9fcec73d87f21a1f04d72a
-  lownode (0.5.15) sha256=1f9a0b909c7c01c41ef3f0090b6e421944b15b4600ae56373830d71760a43b0f
+  lownode (0.5.16) sha256=14b9f269d41094db011e3af37f237adf31e632e6c09ca64500d40eac68224f6f
   lowtype (1.7.3) sha256=dbc4cb057347d2c58d70fb56b5d8296216754924ed81b41f4063717a8687ee30
   observers (1.1.5)
   openssl (4.0.2) sha256=1037ad2868ae58df9ad917891c0c0f9815a1172f6846d4bcdd508e4c2ee747c2
@@ -295,7 +295,7 @@ CHECKSUMS
   providers (0.6.3) sha256=8f1af765985f24adef35a0c45652a14d9d2b0efecba484f9e08d436382185a6d
   rack (3.2.7) sha256=93e13e1c24f93556671d85d2d79fa228c3485815c50d7e2f265b5330c6528fb7
   rage-iodine (5.5.0) sha256=e7937c62b8603a26ae2c5c1633209eac6a0a56bb394ead046953cad7938b5200
-  raindeer (1.0.57)
+  raindeer (1.0.59)
   raindown (0.25.4) sha256=cab0c87ea59f10a2209898ec422cfc33b55a169021ac46f602ba4891abea8225
   rb-fsevent (0.11.2) sha256=43900b972e7301d6570f64b850a5aa67833ee7d87b458ee92805d56b7318aefe
   rb-inotify (0.11.1) sha256=a0a700441239b0ff18eb65e3866236cd78613d6b9f78fea1f9ac47a85e47be6e
